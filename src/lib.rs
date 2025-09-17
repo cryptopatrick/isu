@@ -904,7 +904,7 @@ impl fmt::Display for AltQ {
 
 /// Enum representing different types of questions.
 #[derive(Clone)]
-enum Question {
+pub enum Question {
     WhQ(WhQ), // Wh-question
     YNQ(YNQ), // Yes/no question
     AltQ(AltQ), // Alternative question
@@ -915,7 +915,7 @@ impl Question {
     /// Creates a new Question from a string.
     /// # Arguments
     /// * `s` - The string to parse.
-    fn new(s: &str) -> Result<Self, String> {
+    pub fn new(s: &str) -> Result<Self, String> {
         if s.starts_with("?x.") && s.ends_with("(x)") {
             Ok(Question::WhQ(WhQ::new(&s[3..s.len() - 3])?))
         } else if s.starts_with('?') {
@@ -1122,7 +1122,7 @@ impl fmt::Display for Respond {
 
 /// Represents a consult database plan constructor.
 #[derive(Clone)]
-struct ConsultDB {
+pub struct ConsultDB {
     content: Question, // The question to consult
 }
 
@@ -1131,7 +1131,7 @@ impl ConsultDB {
     /// Creates a new ConsultDB plan.
     /// # Arguments
     /// * `content` - The question to consult.
-    fn new(content: Question) -> Self {
+    pub fn new(content: Question) -> Self {
         ConsultDB { content }
     }
 }
@@ -1152,7 +1152,7 @@ impl fmt::Display for ConsultDB {
 
 /// Represents a findout plan constructor.
 #[derive(Clone)]
-struct Findout {
+pub struct Findout {
     content: Question, // The question to find out
 }
 
@@ -1161,7 +1161,7 @@ impl Findout {
     /// Creates a new Findout plan.
     /// # Arguments
     /// * `content` - The question to find out.
-    fn new(content: Question) -> Self {
+    pub fn new(content: Question) -> Self {
         Findout { content }
     }
 }
@@ -1212,7 +1212,7 @@ impl fmt::Display for Raise {
 
 /// Represents a conditional plan constructor.
 #[derive(Clone)]
-struct If {
+pub struct If {
     cond: Question, // The condition question
     iftrue: Vec<Box<dyn PlanConstructor>>, // Plans if condition is true
     iffalse: Vec<Box<dyn PlanConstructor>>, // Plans if condition is false
@@ -1225,7 +1225,7 @@ impl If {
     /// * `cond` - The condition question.
     /// * `iftrue` - Plans to execute if true.
     /// * `iffalse` - Plans to execute if false.
-    fn new(cond: Question, iftrue: Vec<Box<dyn PlanConstructor>>, iffalse: Vec<Box<dyn PlanConstructor>>) -> Self {
+    pub fn new(cond: Question, iftrue: Vec<Box<dyn PlanConstructor>>, iffalse: Vec<Box<dyn PlanConstructor>>) -> Self {
         If { cond, iftrue, iffalse }
     }
 }
@@ -1254,7 +1254,7 @@ impl fmt::Display for If {
 }
 
 /// Trait for plan constructors.
-trait PlanConstructor: Type {}
+pub trait PlanConstructor: Type {}
 
 impl PlanConstructor for Respond {}
 impl PlanConstructor for ConsultDB {}
@@ -1341,14 +1341,14 @@ trait Grammar {
 }
 
 /// A simple grammar for generating and interpreting dialogue moves.
-struct SimpleGenGrammar {
+pub struct SimpleGenGrammar {
     forms: HashMap<String, String>, // Mapping of move strings to output strings
 }
 
 /// Implementation of methods for the SimpleGenGrammar struct.
 impl SimpleGenGrammar {
     /// Creates a new SimpleGenGrammar with default forms.
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut grammar = SimpleGenGrammar {
             forms: HashMap::new(),
         };
@@ -1361,7 +1361,7 @@ impl SimpleGenGrammar {
     /// # Arguments
     /// * `move_str` - The move string.
     /// * `output` - The corresponding output string.
-    fn add_form(&mut self, move_str: &str, output: &str) {
+    pub fn add_form(&mut self, move_str: &str, output: &str) {
         self.forms.insert(move_str.to_string(), output.to_string());
     }
 
@@ -1505,21 +1505,21 @@ trait Database {
 }
 
 /// A travel database storing entries as key-value maps.
-struct TravelDB {
+pub struct TravelDB {
     entries: Vec<HashMap<String, String>>, // Database entries
 }
 
 /// Implementation of methods for the TravelDB struct.
 impl TravelDB {
     /// Creates a new empty TravelDB.
-    fn new() -> Self {
+    pub fn new() -> Self {
         TravelDB { entries: Vec::new() }
     }
 
     /// Adds an entry to the database.
     /// # Arguments
     /// * `entry` - The key-value map to add.
-    fn add_entry(&mut self, entry: HashMap<String, String>) {
+    pub fn add_entry(&mut self, entry: HashMap<String, String>) {
         self.entries.push(entry);
     }
 
@@ -1573,7 +1573,7 @@ impl Database for TravelDB {
 // Domain
 
 /// Represents the domain knowledge, including predicates, sorts, and plans.
-struct Domain {
+pub struct Domain {
     preds0: HashSet<String>, // Zero-place predicates
     preds1: HashMap<String, String>, // One-place predicates with their sorts
     sorts: HashMap<String, HashSet<String>>, // Sorts and their individuals
@@ -1588,7 +1588,7 @@ impl Domain {
     /// * `preds0` - Zero-place predicates.
     /// * `preds1` - One-place predicates with their sorts.
     /// * `sorts` - Sorts and their individuals.
-    fn new(
+    pub fn new(
         preds0: HashSet<String>,
         preds1: HashMap<String, String>,
         sorts: HashMap<String, HashSet<String>>,
@@ -1610,7 +1610,7 @@ impl Domain {
     /// # Arguments
     /// * `trigger` - The question that triggers the plan.
     /// * `plan` - The plan constructors to execute.
-    fn add_plan(&mut self, trigger: Question, plan: Vec<Box<dyn PlanConstructor>>) {
+    pub fn add_plan(&mut self, trigger: Question, plan: Vec<Box<dyn PlanConstructor>>) {
         for m in &plan {
             m.typecheck(self).unwrap();
         }
@@ -1740,7 +1740,7 @@ impl IBISInfostate {
 // IBIS Controller
 
 /// Controls the IBIS dialogue system.
-struct IBISController {
+pub struct IBISController {
     is: IBISInfostate, // Information state
     mivs: StandardMIVS, // Minimal information state
     domain: Domain, // Domain knowledge
@@ -1755,7 +1755,7 @@ impl IBISController {
     /// * `domain` - The domain knowledge.
     /// * `database` - The travel database.
     /// * `grammar` - The grammar for dialogue.
-    fn new(domain: Domain, database: TravelDB, grammar: SimpleGenGrammar) -> Self {
+    pub fn new(domain: Domain, database: TravelDB, grammar: SimpleGenGrammar) -> Self {
         IBISController {
             is: IBISInfostate { is: Record::new(HashMap::new()) },
             mivs: StandardMIVS {
@@ -1865,96 +1865,4 @@ impl DialogueManager for IBISController {
         println!("+------------------------ - -  -");
         println!();
     }
-}
-
-// Main function to demonstrate the travel dialogue system
-
-/// Entry point for the travel dialogue system.
-fn main() {
-    // Initialize zero-place predicates
-    let preds0 = HashSet::from(["return".to_string(), "need-visa".to_string()]);
-    
-    // Initialize one-place predicates with their sorts
-    let preds1 = HashMap::from([
-        ("price".to_string(), "int".to_string()),
-        ("how".to_string(), "means".to_string()),
-        ("dest_city".to_string(), "city".to_string()),
-        ("depart_city".to_string(), "city".to_string()),
-        ("depart_day".to_string(), "day".to_string()),
-        ("class".to_string(), "flight_class".to_string()),
-        ("return_day".to_string(), "day".to_string()),
-    ]);
-    
-    // Initialize sorts and their individuals
-    let sorts = HashMap::from([
-        (
-            "means".to_string(),
-            HashSet::from(["plane".to_string(), "train".to_string()]),
-        ),
-        (
-            "city".to_string(),
-            HashSet::from(["paris".to_string(), "london".to_string(), "berlin".to_string()]),
-        ),
-        (
-            "day".to_string(),
-            HashSet::from(["today".to_string(), "tomorrow".to_string()]),
-        ),
-        (
-            "flight_class".to_string(),
-            HashSet::from(["first".to_string(), "second".to_string()]),
-        ),
-    ]);
-    
-    // Create the domain
-    let mut domain = Domain::new(preds0, preds1, sorts);
-
-    // Define a plan for price queries
-    let plan = vec![
-        Box::new(Findout::new(Question::new("?x.how(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.dest_city(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.depart_city(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.depart_day(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.class(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?return()").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(If::new(
-            Question::new("?return()").unwrap(),
-            vec![Box::new(Findout::new(Question::new("?x.return_day(x)").unwrap())) as Box<dyn PlanConstructor>],
-            vec![],
-        )) as Box<dyn PlanConstructor>,
-        Box::new(ConsultDB::new(Question::new("?x.price(x)").unwrap())) as Box<dyn PlanConstructor>,
-    ];
-    domain.add_plan(Question::new("?x.price(x)").unwrap(), plan);
-
-    // Initialize the travel database
-    let mut database = TravelDB::new();
-    database.add_entry(HashMap::from([
-        ("price".to_string(), "232".to_string()),
-        ("from".to_string(), "berlin".to_string()),
-        ("to".to_string(), "paris".to_string()),
-        ("day".to_string(), "today".to_string()),
-    ]));
-    database.add_entry(HashMap::from([
-        ("price".to_string(), "345".to_string()),
-        ("from".to_string(), "paris".to_string()),
-        ("to".to_string(), "london".to_string()),
-        ("day".to_string(), "today".to_string()),
-    ]));
-
-    // Initialize the grammar
-    let mut grammar = SimpleGenGrammar::new();
-    grammar.add_form("Ask('?x.how(x)')", "How do you want to travel?");
-    grammar.add_form("Ask('?x.dest_city(x)')", "Where do you want to go?");
-    grammar.add_form("Ask('?x.depart_city(x)')", "From where are you leaving?");
-    grammar.add_form("Ask('?x.depart_day(x)')", "When do you want to leave?");
-    grammar.add_form("Ask('?x.return_day(x)')", "When do you want to return?");
-    grammar.add_form("Ask('?x.class(x)')", "First or second class?");
-    grammar.add_form("Ask('?return()')", "Do you want a return ticket?");
-
-    // Create and run the IBIS controller
-    let mut ibis = IBISController::new(domain, database, grammar);
-    println!("Starting IBIS Travel Dialogue System...");
-    println!("Type 'quit' to exit, or ask questions about travel.");
-    println!("Example: 'I want to go to paris'");
-    println!();
-    ibis.run();
 }
