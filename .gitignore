@@ -1,0 +1,16 @@
+target/
+_wb/
+_dev/
+_temp/
+docs-dev/
+py-trindikit-master/
+tests/
+
+
+# Files
+.DS_Store
+Cargo.lock
+.claude
+CLAUDE.md
+claude.md
+
