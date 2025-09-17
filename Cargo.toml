@@ -1,6 +1,6 @@
 [package]
 name = "isu"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2024"
 authors = ["cryptopatrick <cryptopatrick@gmail.com>"]
 description = "Rust implementation of Information State Update theory, applicable in Issue-Based Dialogue Management and Conversational Agent Architecture."
@@ -17,22 +17,9 @@ autotests = false
 name = "isu"
 path = "src/lib.rs"
 
-
-
 [[test]]
 name = "tests"
 path = "tests/tests.rs"
-
-#[[bench]]
-#name = "bench"
-#path = "tests/bench.rs"
-#
-#[profile.bench]
-#opt-level = 3
-
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
