@@ -1,5 +1,6 @@
-//! A dialogue system implementation in Rust, inspired by Python code, for managing
-//! conversational interactions with type checking and domain-specific logic.
+//! isu is a Rust implementation of Information State Update theory.
+//! The library can be use for Issue-Based Dialogue Management and 
+//! Conversational Agent Architecture.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -12,7 +13,6 @@ use std::rc::Rc;
 /// Note: Simplified to always return true due to Rust's type system constraints.
 /// Modify based on specific type requirements.
 fn is_sequence<T>(seq: &T) -> bool {
-    // In Rust, we can't directly check for iterability like in Python.
     // This is a simplified version assuming we work with specific types.
     true // Modify based on specific needs
 }
@@ -95,7 +95,7 @@ impl<T: Clone + fmt::Display> fmt::Display for Value<T> {
 
 // Record struct
 
-/// A key-value store with type checking for fields, akin to a Python dictionary.
+/// A key-value store with type checking for fields.
 #[derive(Clone)]
 struct Record {
     typedict: HashMap<String, fn(&dyn std::any::Any) -> bool>, // Type checking functions for fields
