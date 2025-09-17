@@ -2,10 +2,76 @@
 //! The library can be use for Issue-Based Dialogue Management and 
 //! Conversational Agent Architecture.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt;
 use std::io::{self, Write};
-use std::rc::Rc;
+use std::hash::Hash;
+use std::any::Any;
+
+// Input handling traits and implementations
+
+/// Trait for input handling abstraction
+pub trait InputHandler {
+    /// Attempts to read a line of input
+    /// Returns None if no input is available or on EOF
+    fn read_line(&mut self) -> Option<String>;
+    
+    /// Returns true if input is available
+    fn has_input(&self) -> bool;
+}
+
+/// Standard input handler that blocks for user input
+pub struct StandardInputHandler;
+
+impl InputHandler for StandardInputHandler {
+    fn read_line(&mut self) -> Option<String> {
+        print!("U> ");
+        io::stdout().flush().unwrap();
+        let mut input = String::new();
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => Some(input.trim().to_string()),
+            Err(_) => {
+                println!("EOF");
+                None
+            }
+        }
+    }
+    
+    fn has_input(&self) -> bool {
+        true // Always assume input is available for blocking input
+    }
+}
+
+/// Demo input handler with predefined inputs
+pub struct DemoInputHandler {
+    inputs: VecDeque<String>,
+    current_index: usize,
+}
+
+impl DemoInputHandler {
+    pub fn new(inputs: Vec<String>) -> Self {
+        Self {
+            inputs: inputs.into(),
+            current_index: 0,
+        }
+    }
+}
+
+impl InputHandler for DemoInputHandler {
+    fn read_line(&mut self) -> Option<String> {
+        if let Some(input) = self.inputs.pop_front() {
+            println!("U> {}", input); // Show simulated user input
+            Some(input)
+        } else {
+            println!("Demo completed - no more inputs");
+            None
+        }
+    }
+    
+    fn has_input(&self) -> bool {
+        !self.inputs.is_empty()
+    }
+}
 
 // Helper functions
 
@@ -21,15 +87,24 @@ fn is_sequence<T>(seq: &T) -> bool {
 
 /// A generic container for values with constraints on allowed values or type checks.
 /// Represents a single value with optional validation rules.
-#[derive(Clone)]
-struct Value<T: Clone> {
+struct Value<T: Clone + PartialEq + Eq + Hash> {
     value: Option<T>, // The stored value, if any
     allowed_values: HashSet<T>, // Set of permitted values
-    type_constraint: Option<fn(&T) -> bool>, // Optional type checking function
+    type_constraint: Option<Box<dyn Fn(&T) -> bool>>, // Optional type checking function
+}
+
+impl<T: Clone + PartialEq + Eq + Hash> Clone for Value<T> {
+    fn clone(&self) -> Self {
+        Value {
+            value: self.value.clone(),
+            allowed_values: self.allowed_values.clone(),
+            type_constraint: None, // Cannot clone function pointers
+        }
+    }
 }
 
 /// Implementation of methods for the Value struct.
-impl<T: Clone + PartialEq + fmt::Display> Value<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> Value<T> {
     /// Creates a new Value with a set of allowed values.
     /// # Arguments
     /// * `allowed` - A HashSet of permitted values.
@@ -51,7 +126,7 @@ impl<T: Clone + PartialEq + fmt::Display> Value<T> {
         Value {
             value: None,
             allowed_values: HashSet::new(),
-            type_constraint: Some(Box::new(type_check) as fn(&T) -> bool),
+            type_constraint: Some(Box::new(type_check)),
         }
     }
 
@@ -63,7 +138,7 @@ impl<T: Clone + PartialEq + fmt::Display> Value<T> {
         if !self.allowed_values.is_empty() && !self.allowed_values.contains(&value) {
             return Err(format!("{} is not among allowed values", value));
         }
-        if let Some(check) = self.type_constraint {
+        if let Some(check) = &self.type_constraint {
             if !check(&value) {
                 return Err(format!("{} does not match type constraint", value));
             }
@@ -84,7 +159,7 @@ impl<T: Clone + PartialEq + fmt::Display> Value<T> {
 }
 
 /// Formats the Value for display, showing the stored value or an empty marker.
-impl<T: Clone + fmt::Display> fmt::Display for Value<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> fmt::Display for Value<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.value {
             Some(v) => write!(f, "<{}>", v),
@@ -96,10 +171,18 @@ impl<T: Clone + fmt::Display> fmt::Display for Value<T> {
 // Record struct
 
 /// A key-value store with type checking for fields.
-#[derive(Clone)]
 struct Record {
-    typedict: HashMap<String, fn(&dyn std::any::Any) -> bool>, // Type checking functions for fields
-    fields: HashMap<String, Box<dyn std::any::Any>>, // Stored field values
+    typedict: HashMap<String, Box<dyn Fn(&dyn Any) -> bool>>, // Type checking functions for fields
+    fields: HashMap<String, Box<dyn Any>>, // Stored field values
+}
+
+impl Clone for Record {
+    fn clone(&self) -> Self {
+        Record {
+            typedict: HashMap::new(), // Cannot clone function pointers
+            fields: HashMap::new(), // Cannot clone Any trait objects safely
+        }
+    }
 }
 
 /// Implementation of methods for the Record struct.
@@ -107,17 +190,17 @@ impl Record {
     /// Creates a new Record with initial fields and inferred type checks.
     /// # Arguments
     /// * `fields` - Initial key-value pairs.
-    fn new(fields: HashMap<String, Box<dyn std::any::Any>>) -> Self {
-        let mut typedict = HashMap::new();
+    fn new(fields: HashMap<String, Box<dyn Any>>) -> Self {
+        let mut typedict: HashMap<String, Box<dyn Fn(&dyn Any) -> bool>> = HashMap::new();
         for (key, value) in &fields {
             let type_id = value.type_id();
-            typedict.insert(key.clone(), move |v: &dyn std::any::Any| v.type_id() == type_id);
+            typedict.insert(key.clone(), Box::new(move |v: &dyn Any| v.type_id() == type_id) as Box<dyn Fn(&dyn Any) -> bool>);
         }
         Record { typedict, fields }
     }
 
     /// Returns a HashMap of field keys to their values.
-    fn as_dict(&self) -> HashMap<String, &dyn std::any::Any> {
+    fn as_dict(&self) -> HashMap<String, &dyn Any> {
         self.fields.iter().map(|(k, v)| (k.clone(), v.as_ref())).collect()
     }
 
@@ -125,7 +208,7 @@ impl Record {
     /// # Arguments
     /// * `key` - The field key to check.
     /// * `value` - Optional value to type check.
-    fn typecheck(&self, key: &str, value: Option<&dyn std::any::Any>) -> Result<(), String> {
+    fn typecheck(&self, key: &str, value: Option<&dyn Any>) -> Result<(), String> {
         if let Some(type_fn) = self.typedict.get(key) {
             if let Some(val) = value {
                 if !type_fn(val) {
@@ -141,7 +224,7 @@ impl Record {
     /// Retrieves a field value by key after type checking.
     /// # Arguments
     /// * `key` - The field key.
-    fn get(&self, key: &str) -> Option<&dyn std::any::Any> {
+    fn get(&self, key: &str) -> Option<&dyn Any> {
         self.typecheck(key, None).ok()?;
         self.fields.get(key).map(|v| v.as_ref())
     }
@@ -150,7 +233,7 @@ impl Record {
     /// # Arguments
     /// * `key` - The field key.
     /// * `value` - The value to set.
-    fn set(&mut self, key: &str, value: Box<dyn std::any::Any>) -> Result<(), String> {
+    fn set(&mut self, key: &str, value: Box<dyn Any>) -> Result<(), String> {
         self.typecheck(key, Some(value.as_ref()))?;
         self.fields.insert(key.to_string(), value);
         Ok(())
@@ -176,7 +259,7 @@ impl Record {
                 result.push('\n');
             }
             result.push_str(prefix);
-            result.push_str(key);
+            result.push_str(&key);
             result.push_str(": ");
             // Simplified: assumes value can be formatted as string
             result.push_str(&format!("{:?}", value));
@@ -196,10 +279,18 @@ impl fmt::Display for Record {
 // Stack struct
 
 /// A generic stack with optional type constraints.
-#[derive(Clone)]
 struct Stack<T: Clone> {
     elements: Vec<T>, // The stack's elements
-    type_constraint: Option<fn(&T) -> bool>, // Optional type checking function
+    type_constraint: Option<Box<dyn Fn(&T) -> bool>>, // Optional type checking function
+}
+
+impl<T: Clone> Clone for Stack<T> {
+    fn clone(&self) -> Self {
+        Stack {
+            elements: self.elements.clone(),
+            type_constraint: None, // Cannot clone function pointers
+        }
+    }
 }
 
 /// Implementation of methods for the Stack struct.
@@ -221,7 +312,7 @@ impl<T: Clone + PartialEq + fmt::Display> Stack<T> {
     {
         Stack {
             elements: Vec::new(),
-            type_constraint: Some(Box::new(type_check) as fn(&T) -> bool),
+            type_constraint: Some(Box::new(type_check)),
         }
     }
 
@@ -239,7 +330,7 @@ impl<T: Clone + PartialEq + fmt::Display> Stack<T> {
     /// # Arguments
     /// * `value` - The value to push.
     fn push(&mut self, value: T) -> Result<(), String> {
-        if let Some(check) = self.type_constraint {
+        if let Some(check) = &self.type_constraint {
             if !check(&value) {
                 return Err(format!("{} does not match type constraint", value));
             }
@@ -271,12 +362,12 @@ impl<T: Clone + fmt::Display> fmt::Display for Stack<T> {
 
 /// A stack-based set ensuring unique elements with LIFO order.
 #[derive(Clone)]
-struct StackSet<T: Clone + PartialEq> {
+struct StackSet<T: Clone + PartialEq + Eq + Hash> {
     stack: Stack<T>, // Underlying stack for storage
 }
 
 /// Implementation of methods for the StackSet struct.
-impl<T: Clone + PartialEq + fmt::Display> StackSet<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> StackSet<T> {
     /// Creates a new empty StackSet.
     fn new() -> Self {
         StackSet { stack: Stack::new() }
@@ -313,7 +404,7 @@ impl<T: Clone + PartialEq + fmt::Display> StackSet<T> {
 }
 
 /// Formats the StackSet for display, showing the underlying stack.
-impl<T: Clone + PartialEq + fmt::Display> fmt::Display for StackSet<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> fmt::Display for StackSet<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<{{ {} <}}", self.stack.to_string())
     }
@@ -322,14 +413,22 @@ impl<T: Clone + PartialEq + fmt::Display> fmt::Display for StackSet<T> {
 // TSet struct
 
 /// A typed set with optional type constraints for elements.
-#[derive(Clone)]
-struct TSet<T: Clone + PartialEq> {
+struct TSet<T: Clone + PartialEq + Eq + Hash> {
     elements: HashSet<T>, // The set of elements
-    type_constraint: Option<fn(&T) -> bool>, // Optional type checking function
+    type_constraint: Option<Box<dyn Fn(&T) -> bool>>, // Optional type checking function
+}
+
+impl<T: Clone + PartialEq + Eq + Hash> Clone for TSet<T> {
+    fn clone(&self) -> Self {
+        TSet {
+            elements: self.elements.clone(),
+            type_constraint: None, // Cannot clone function pointers
+        }
+    }
 }
 
 /// Implementation of methods for the TSet struct.
-impl<T: Clone + PartialEq + fmt::Display> TSet<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> TSet<T> {
     /// Creates a new empty TSet.
     fn new() -> Self {
         TSet {
@@ -347,7 +446,7 @@ impl<T: Clone + PartialEq + fmt::Display> TSet<T> {
     {
         TSet {
             elements: HashSet::new(),
-            type_constraint: Some(Box::new(type_check) as fn(&T) -> bool),
+            type_constraint: Some(Box::new(type_check)),
         }
     }
 
@@ -355,7 +454,7 @@ impl<T: Clone + PartialEq + fmt::Display> TSet<T> {
     /// # Arguments
     /// * `value` - The value to add.
     fn add(&mut self, value: T) -> Result<(), String> {
-        if let Some(check) = self.type_constraint {
+        if let Some(check) = &self.type_constraint {
             if !check(&value) {
                 return Err(format!("{} does not match type constraint", value));
             }
@@ -383,7 +482,7 @@ impl<T: Clone + PartialEq + fmt::Display> TSet<T> {
 }
 
 /// Formats the TSet for display as a comma-separated list of elements.
-impl<T: Clone + PartialEq + fmt::Display> fmt::Display for TSet<T> {
+impl<T: Clone + PartialEq + Eq + Hash + fmt::Display> fmt::Display for TSet<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let elements: Vec<String> = self.elements.iter().map(|e| e.to_string()).collect();
         write!(f, "{{{}}}", elements.join(", "))
@@ -399,7 +498,7 @@ impl<T: Clone + PartialEq + fmt::Display> fmt::Display for TSet<T> {
 macro_rules! create_enum {
     ($name:ident, $($variant:ident),+) => {
         /// An enumeration with named variants.
-        #[derive(Clone, PartialEq, Debug)]
+        #[derive(Clone, PartialEq, Eq, Debug, Hash)]
         enum $name {
             $($variant),+
         }
@@ -442,7 +541,7 @@ trait Type: fmt::Display {
 }
 
 /// Represents an atomic string with validation rules.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Atomic {
     content: String, // The atomic string value
 }
@@ -474,7 +573,7 @@ impl fmt::Display for Atomic {
 }
 
 /// Represents an individual in the domain, wrapping an Atomic value.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Ind(Atomic);
 
 /// Implementation of methods for the Ind struct.
@@ -506,7 +605,7 @@ impl fmt::Display for Ind {
 }
 
 /// Represents a zero-place predicate.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Pred0(Atomic);
 
 /// Implementation of methods for the Pred0 struct.
@@ -538,7 +637,7 @@ impl fmt::Display for Pred0 {
 }
 
 /// Represents a one-place predicate.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Pred1(Atomic);
 
 /// Implementation of methods for the Pred1 struct.
@@ -613,7 +712,7 @@ impl fmt::Display for Sort {
 }
 
 /// Represents a proposition, combining a predicate with an optional individual and polarity.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 struct Prop {
     pred: Pred0, // The predicate
     ind: Option<Ind>, // Optional individual
@@ -627,7 +726,7 @@ impl Prop {
     /// * `s` - The string to parse (e.g., "pred(ind)" or "-pred").
     fn new(s: &str) -> Result<Self, String> {
         let (yes, pred_str, ind_str) = if s.starts_with('-') {
-            (false, &s[1..], None)
+            (false, &s[1..], None::<&str>)
         } else {
             (true, s, None)
         };
@@ -1214,8 +1313,8 @@ impl fmt::Display for Raise {
 #[derive(Clone)]
 pub struct If {
     cond: Question, // The condition question
-    iftrue: Vec<Box<dyn PlanConstructor>>, // Plans if condition is true
-    iffalse: Vec<Box<dyn PlanConstructor>>, // Plans if condition is false
+    iftrue: Vec<String>, // Plans if condition is true
+    iffalse: Vec<String>, // Plans if condition is false
 }
 
 /// Implementation of methods for the If struct.
@@ -1225,7 +1324,7 @@ impl If {
     /// * `cond` - The condition question.
     /// * `iftrue` - Plans to execute if true.
     /// * `iffalse` - Plans to execute if false.
-    pub fn new(cond: Question, iftrue: Vec<Box<dyn PlanConstructor>>, iffalse: Vec<Box<dyn PlanConstructor>>) -> Self {
+    pub fn new(cond: Question, iftrue: Vec<String>, iffalse: Vec<String>) -> Self {
         If { cond, iftrue, iffalse }
     }
 }
@@ -1234,12 +1333,6 @@ impl If {
 impl Type for If {
     fn typecheck(&self, context: &Domain) -> Result<(), String> {
         self.cond.typecheck(context)?;
-        for m in &self.iftrue {
-            m.typecheck(context)?;
-        }
-        for m in &self.iffalse {
-            m.typecheck(context)?;
-        }
         Ok(())
     }
 }
@@ -1247,14 +1340,14 @@ impl Type for If {
 /// Formats the If for display.
 impl fmt::Display for If {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let iftrue_str: Vec<String> = self.iftrue.iter().map(|m| m.to_string()).collect();
-        let iffalse_str: Vec<String> = self.iffalse.iter().map(|m| m.to_string()).collect();
+        let iftrue_str: Vec<String> = self.iftrue.clone();
+        let iffalse_str: Vec<String> = self.iffalse.clone();
         write!(f, "If('{}', {}, {})", self.cond, iftrue_str.join(", "), iffalse_str.join(", "))
     }
 }
 
 /// Trait for plan constructors.
-pub trait PlanConstructor: Type {}
+pub trait PlanConstructor: Type + fmt::Display + Clone {}
 
 impl PlanConstructor for Respond {}
 impl PlanConstructor for ConsultDB {}
@@ -1293,8 +1386,8 @@ trait DialogueManager {
 struct StandardMIVS {
     input: Value<String>, // User input
     latest_speaker: Value<Speaker>, // Latest speaker (USR or SYS)
-    latest_moves: TSet<Box<dyn Type>>, // Latest dialogue moves
-    next_moves: Stack<Box<dyn Type>>, // Next moves to perform
+    latest_moves: TSet<String>, // Latest dialogue moves
+    next_moves: Stack<String>, // Next moves to perform
     output: Value<String>, // System output
     program_state: Value<ProgramState>, // Program state (RUN or QUIT)
 }
@@ -1332,12 +1425,12 @@ trait Grammar {
     /// Generates a string from a set of moves.
     /// # Arguments
     /// * `moves` - The set of moves to generate.
-    fn generate(&self, moves: &TSet<Box<dyn Type>>) -> String;
+    fn generate(&self, moves: &TSet<String>) -> String;
 
     /// Interprets an input string into a set of moves.
     /// # Arguments
     /// * `input` - The input string to interpret.
-    fn interpret(&self, input: &str) -> Option<TSet<Box<dyn Type>>>;
+    fn interpret(&self, input: &str) -> Option<TSet<String>>;
 }
 
 /// A simple grammar for generating and interpreting dialogue moves.
@@ -1368,46 +1461,8 @@ impl SimpleGenGrammar {
     /// Generates a string for a single move.
     /// # Arguments
     /// * `move` - The move to generate.
-    fn generate_move(&self, r#move: &dyn Type) -> String {
-        if let Some(icm) = r#move.downcast_ref::<ICM>() {
-            if icm.level == "per" && icm.polarity == "pos" {
-                if let Some(content) = &icm.icm_content {
-                    return format!("I heard you say {}", content);
-                }
-            }
-        }
-        self.forms.get(&r#move.to_string()).cloned().unwrap_or_else(|| r#move.to_string())
-    }
-
-}
-
-/// Implements the Grammar trait for SimpleGenGrammar.
-impl Grammar for SimpleGenGrammar {
-    fn generate(&self, moves: &TSet<Box<dyn Type>>) -> String {
-        let phrases: Vec<String> = moves.elements.iter().map(|m| self.generate_move(m.as_ref())).collect();
-        self.join_phrases(&phrases)
-    }
-
-    fn interpret(&self, input: &str) -> Option<TSet<Box<dyn Type>>> {
-        let result = (|| {
-            if let Ok(move_val) = input.parse::<MoveEval>() {
-                return Some(move_val.0);
-            }
-            if let Ok(ask) = Ask::new(Question::new(input)) {
-                return Some(TSet {
-                    elements: HashSet::from([Box::new(ask) as Box<dyn Type>]),
-                    type_constraint: None,
-                });
-            }
-            if let Ok(answer) = Answer::new(Ans::new(input)?) {
-                return Some(TSet {
-                    elements: HashSet::from([Box::new(answer) as Box<dyn Type>]),
-                    type_constraint: None,
-                });
-            }
-            None
-        })();
-        result.unwrap_or_else(|| TSet::new())
+    fn generate_move(&self, move_str: &str) -> String {
+        self.forms.get(move_str).cloned().unwrap_or_else(|| move_str.to_string())
     }
 
     /// Joins phrases into a single string with punctuation.
@@ -1428,17 +1483,37 @@ impl Grammar for SimpleGenGrammar {
     }
 }
 
-/// Temporary struct for parsing moves (placeholder for actual implementation).
-struct MoveEval(TSet<Box<dyn Type>>);
-
-/// Implementation of parsing for MoveEval (placeholder).
-impl std::str::FromStr for MoveEval {
-    type Err = String;
-
-    fn from_str(_s: &str) -> Result<Self, Self::Err> {
-        Ok(MoveEval(TSet::new())) // Placeholder
+/// Implements the Grammar trait for SimpleGenGrammar.
+impl Grammar for SimpleGenGrammar {
+    fn generate(&self, moves: &TSet<String>) -> String {
+        let phrases: Vec<String> = moves.elements.iter().map(|m| self.generate_move(m)).collect();
+        self.join_phrases(&phrases)
     }
+
+    fn interpret(&self, input: &str) -> Option<TSet<String>> {
+        let mut moves = TSet::new();
+        
+        // Try to parse as a question
+        if let Ok(_question) = Question::new(input) {
+            moves.add(format!("Ask('{}')", input)).ok();
+        }
+        // Try to parse as an answer
+        else if let Ok(_answer) = Ans::new(input) {
+            moves.add(format!("Answer({})", input)).ok();
+        }
+        // Handle special cases
+        else if input == "quit" || input == "exit" {
+            moves.add("Quit()".to_string()).ok();
+        }
+        else {
+            return None;
+        }
+        
+        Some(moves)
+    }
+
 }
+
 
 /// CFG Grammar Rule structure for parsing context-free grammar files
 #[derive(Debug, Clone)]
@@ -1578,7 +1653,7 @@ pub struct Domain {
     preds1: HashMap<String, String>, // One-place predicates with their sorts
     sorts: HashMap<String, HashSet<String>>, // Sorts and their individuals
     inds: HashMap<String, String>, // Individuals and their sorts
-    plans: HashMap<Question, Vec<Box<dyn PlanConstructor>>>, // Question-triggered plans
+    plans: HashMap<String, Vec<String>>, // Question-triggered plans
 }
 
 /// Implementation of methods for the Domain struct.
@@ -1610,12 +1685,8 @@ impl Domain {
     /// # Arguments
     /// * `trigger` - The question that triggers the plan.
     /// * `plan` - The plan constructors to execute.
-    pub fn add_plan(&mut self, trigger: Question, plan: Vec<Box<dyn PlanConstructor>>) {
-        for m in &plan {
-            m.typecheck(self).unwrap();
-        }
-        trigger.typecheck(self).unwrap();
-        self.plans.insert(trigger, plan);
+    pub fn add_plan(&mut self, trigger: Question, plan: Vec<String>) {
+        self.plans.insert(trigger.to_string(), plan);
     }
 
     /// Checks if an answer is relevant to a question.
@@ -1688,8 +1759,8 @@ impl Domain {
     /// Retrieves the plan for a question.
     /// # Arguments
     /// * `question` - The question to get the plan for.
-    fn get_plan(&self, question: &Question) -> Option<Stack<Box<dyn PlanConstructor>>> {
-        self.plans.get(question).map(|plan| {
+    fn get_plan(&self, question: &Question) -> Option<Stack<String>> {
+        self.plans.get(&question.to_string()).map(|plan| {
             let mut stack = Stack::new();
             for construct in plan.iter().rev() {
                 stack.push(construct.clone()).unwrap();
@@ -1710,22 +1781,12 @@ struct IBISInfostate {
 impl IBISInfostate {
     /// Initializes the information state with default fields.
     fn init_is(&mut self) {
-        let mut private_fields = HashMap::new();
-        private_fields.insert("agenda".to_string(), Box::new(Stack::new()) as Box<dyn std::any::Any>);
-        private_fields.insert("plan".to_string(), Box::new(Stack::new()) as Box<dyn std::any::Any>);
-        private_fields.insert("bel".to_string(), Box::new(TSet::new()) as Box<dyn std::any::Any>);
-        let mut shared_fields = HashMap::new();
-        shared_fields.insert("com".to_string(), Box::new(TSet::new()) as Box<dyn std::any::Any>);
-        shared_fields.insert("qud".to_string(), Box::new(StackSet::new()) as Box<dyn std::any::Any>);
-        let mut lu_fields = HashMap::new();
-        lu_fields.insert("speaker".to_string(), Box::new(Speaker::USR) as Box<dyn std::any::Any>);
-        lu_fields.insert("moves".to_string(), Box::new(TSet::new()) as Box<dyn std::any::Any>);
-        let lu = Record::new(lu_fields);
-        shared_fields.insert("lu".to_string(), Box::new(lu) as Box<dyn std::any::Any>);
-        let shared = Record::new(shared_fields);
         let mut fields = HashMap::new();
-        fields.insert("private".to_string(), Box::new(private_fields) as Box<dyn std::any::Any>);
-        fields.insert("shared".to_string(), Box::new(shared) as Box<dyn std::any::Any>);
+        fields.insert("agenda".to_string(), Box::new(Stack::<String>::new()) as Box<dyn Any>);
+        fields.insert("plan".to_string(), Box::new(Stack::<String>::new()) as Box<dyn Any>);
+        fields.insert("bel".to_string(), Box::new(TSet::<String>::new()) as Box<dyn Any>);
+        fields.insert("com".to_string(), Box::new(TSet::<String>::new()) as Box<dyn Any>);
+        fields.insert("qud".to_string(), Box::new(StackSet::<String>::new()) as Box<dyn Any>);
         self.is = Record::new(fields);
     }
 
@@ -1746,6 +1807,7 @@ pub struct IBISController {
     domain: Domain, // Domain knowledge
     database: TravelDB, // Travel database
     grammar: SimpleGenGrammar, // Grammar for generation and interpretation
+    input_handler: Box<dyn InputHandler>, // Input handling abstraction
 }
 
 /// Implementation of methods for the IBISController struct.
@@ -1756,6 +1818,10 @@ impl IBISController {
     /// * `database` - The travel database.
     /// * `grammar` - The grammar for dialogue.
     pub fn new(domain: Domain, database: TravelDB, grammar: SimpleGenGrammar) -> Self {
+        Self::with_input_handler(domain, database, grammar, Box::new(StandardInputHandler))
+    }
+    
+    pub fn with_input_handler(domain: Domain, database: TravelDB, grammar: SimpleGenGrammar, input_handler: Box<dyn InputHandler>) -> Self {
         IBISController {
             is: IBISInfostate { is: Record::new(HashMap::new()) },
             mivs: StandardMIVS {
@@ -1769,6 +1835,7 @@ impl IBISController {
             domain,
             database,
             grammar,
+            input_handler,
         }
     }
 
@@ -1778,36 +1845,35 @@ impl IBISController {
     }
 
     /// Generates output from the next moves.
-    fn generate(&self) {
-        let output = self.grammar.generate(&self.mivs.next_moves);
+    fn generate(&mut self) {
+        // Convert stack to TSet for generation
+        let mut moves_set = TSet::new();
+        for element in &self.mivs.next_moves.elements {
+            moves_set.add(element.clone()).ok();
+        }
+        let output = self.grammar.generate(&moves_set);
         self.mivs.output.set(output).unwrap();
     }
 
     /// Outputs the generated response.
-    fn output(&self) {
+    fn output(&mut self) {
         println!("S> {}", self.mivs.output.get().unwrap_or(&"[---]".to_string()));
         println!();
         self.mivs.latest_speaker.set(Speaker::SYS).unwrap();
         self.mivs.latest_moves.clear();
-        self.mivs.latest_moves = self.mivs.next_moves.clone();
+        for element in &self.mivs.next_moves.elements {
+            self.mivs.latest_moves.add(element.clone()).ok();
+        }
         self.mivs.next_moves.clear();
     }
 
     /// Reads user input.
     fn input(&mut self) {
-        print!("U> ");
-        io::stdout().flush().unwrap();
-        let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Ok(_) => {
-                input = input.trim().to_string();
-                self.mivs.input.set(input).unwrap();
-                self.mivs.latest_speaker.set(Speaker::USR).unwrap();
-            }
-            Err(_) => {
-                println!("EOF");
-                std::process::exit(0);
-            }
+        if let Some(input) = self.input_handler.read_line() {
+            self.mivs.input.set(input).unwrap();
+            self.mivs.latest_speaker.set(Speaker::USR).unwrap();
+        } else {
+            self.mivs.program_state.set(ProgramState::QUIT).unwrap();
         }
     }
 
@@ -1817,7 +1883,9 @@ impl IBISController {
         if let Some(input) = self.mivs.input.get() {
             if !input.is_empty() {
                 if let Some(moves) = self.grammar.interpret(input) {
-                    self.mivs.latest_moves = moves;
+                    for move_str in &moves.elements {
+                        self.mivs.latest_moves.add(move_str.clone()).ok();
+                    }
                 } else {
                     println!("Did not understand: {}", input);
                 }
@@ -1839,8 +1907,7 @@ impl DialogueManager for IBISController {
     }
 
     fn control(&mut self) {
-        let greet = Box::new(Greet) as Box<dyn Type>;
-        self.mivs.next_moves.push(greet).unwrap();
+        self.mivs.next_moves.push("Greet()".to_string()).unwrap();
         self.print_state();
         while self.mivs.program_state.get() != Some(&ProgramState::QUIT) {
             self.select();
@@ -1864,5 +1931,13 @@ impl DialogueManager for IBISController {
         self.is.print_is("| ");
         println!("+------------------------ - -  -");
         println!();
+    }
+}
+
+/// Additional implementation to make IBISController usable
+impl IBISController {
+    /// Runs the dialogue manager (public interface)
+    pub fn run(&mut self) {
+        <Self as DialogueManager>::run(self);
     }
 }

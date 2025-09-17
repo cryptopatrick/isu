@@ -43,18 +43,14 @@ fn main() {
 
     // Define a plan for price queries
     let plan = vec![
-        Box::new(Findout::new(Question::new("?x.how(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.dest_city(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.depart_city(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.depart_day(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?x.class(x)").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(Findout::new(Question::new("?return()").unwrap())) as Box<dyn PlanConstructor>,
-        Box::new(If::new(
-            Question::new("?return()").unwrap(),
-            vec![Box::new(Findout::new(Question::new("?x.return_day(x)").unwrap())) as Box<dyn PlanConstructor>],
-            vec![],
-        )) as Box<dyn PlanConstructor>,
-        Box::new(ConsultDB::new(Question::new("?x.price(x)").unwrap())) as Box<dyn PlanConstructor>,
+        "Findout('?x.how(x)')".to_string(),
+        "Findout('?x.dest_city(x)')".to_string(),
+        "Findout('?x.depart_city(x)')".to_string(),
+        "Findout('?x.depart_day(x)')".to_string(),
+        "Findout('?x.class(x)')".to_string(),
+        "Findout('?return()')".to_string(),
+        "If('?return()', ['Findout(?x.return_day(x))'], [])".to_string(),
+        "ConsultDB('?x.price(x)')".to_string(),
     ];
     domain.add_plan(Question::new("?x.price(x)").unwrap(), plan);
 
@@ -83,11 +79,26 @@ fn main() {
     grammar.add_form("Ask('?x.class(x)')", "First or second class?");
     grammar.add_form("Ask('?return()')", "Do you want a return ticket?");
 
-    // Create and run the IBIS controller
-    let mut ibis = IBISController::new(domain, database, grammar);
-    println!("Starting IBIS Travel Dialogue System...");
-    println!("Type 'quit' to exit, or ask questions about travel.");
-    println!("Example: 'I want to go to paris'");
+    // Create demo inputs for non-interactive testing
+    let demo_inputs = vec![
+        "I want to go to paris".to_string(),
+        "train".to_string(),
+        "berlin".to_string(),
+        "today".to_string(),
+        "first".to_string(),
+        "yes".to_string(),
+        "tomorrow".to_string(),
+        "quit".to_string(),
+    ];
+    
+    // Create the IBIS controller with demo input handler
+    let demo_handler = isu::DemoInputHandler::new(demo_inputs);
+    let mut ibis = isu::IBISController::with_input_handler(domain, database, grammar, Box::new(demo_handler));
+    
+    println!("Starting IBIS Travel Dialogue System (Demo Mode)...");
+    println!("Simulating user interaction with predefined inputs:");
     println!();
+    
+    // Run the demo
     ibis.run();
 }

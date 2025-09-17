@@ -17,9 +17,9 @@ autotests = false
 name = "isu"
 path = "src/lib.rs"
 
-#[bin]
-#name = "isu"
-#path = "src/main.rs"
+[[bin]]
+name = "isu"
+path = "examples/travel.rs"
 
 
 [[test]]
@@ -36,5 +36,11 @@ path = "tests/tests.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+tracing = "0.1"
+criterion = "0.5"
+proptest = "1.0"
 cfg = "0.9"
