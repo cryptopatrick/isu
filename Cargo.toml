@@ -1,6 +1,6 @@
 [package]
 name = "isu"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 authors = ["cryptopatrick <cryptopatrick@gmail.com>"]
 description = "Rust implementation of Information State Update theory, applicable in Issue-Based Dialogue Management and Conversational Agent Architecture."
