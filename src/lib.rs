@@ -1493,17 +1493,17 @@ impl Grammar for SimpleGenGrammar {
     fn interpret(&self, input: &str) -> Option<TSet<String>> {
         let mut moves = TSet::new();
         
+        // Handle special cases first
+        if input == "quit" || input == "exit" {
+            moves.add("Quit()".to_string()).ok();
+        }
         // Try to parse as a question
-        if let Ok(_question) = Question::new(input) {
+        else if let Ok(_question) = Question::new(input) {
             moves.add(format!("Ask('{}')", input)).ok();
         }
         // Try to parse as an answer
         else if let Ok(_answer) = Ans::new(input) {
             moves.add(format!("Answer({})", input)).ok();
-        }
-        // Handle special cases
-        else if input == "quit" || input == "exit" {
-            moves.add("Quit()".to_string()).ok();
         }
         else {
             return None;
@@ -1939,5 +1939,556 @@ impl IBISController {
     /// Runs the dialogue manager (public interface)
     pub fn run(&mut self) {
         <Self as DialogueManager>::run(self);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Tests for core data structures
+    #[test]
+    fn test_value_creation_and_operations() {
+        let allowed_values = HashSet::from(["a".to_string(), "b".to_string(), "c".to_string()]);
+        let mut value = Value::new_allowed(allowed_values);
+        
+        // Test setting valid value
+        assert!(value.set("a".to_string()).is_ok());
+        assert_eq!(value.get(), Some(&"a".to_string()));
+        
+        // Test setting invalid value
+        assert!(value.set("d".to_string()).is_err());
+        
+        // Test clearing value
+        value.clear();
+        assert_eq!(value.get(), None);
+    }
+    
+    #[test]
+    fn test_value_with_type_constraint() {
+        let mut value = Value::new_type(|s: &String| s.len() > 2);
+        
+        assert!(value.set("hello".to_string()).is_ok());
+        assert!(value.set("hi".to_string()).is_err());
+        assert_eq!(value.get(), Some(&"hello".to_string()));
+    }
+    
+    #[test]
+    fn test_stack_operations() {
+        let mut stack = Stack::new();
+        
+        // Test empty stack
+        assert!(stack.top().is_err());
+        assert!(stack.pop().is_err());
+        assert_eq!(stack.len(), 0);
+        
+        // Test push and basic operations
+        assert!(stack.push("item1".to_string()).is_ok());
+        assert!(stack.push("item2".to_string()).is_ok());
+        assert_eq!(stack.len(), 2);
+        
+        // Test top and pop
+        assert_eq!(stack.top().unwrap(), &"item2".to_string());
+        assert_eq!(stack.pop().unwrap(), "item2".to_string());
+        assert_eq!(stack.len(), 1);
+        
+        // Test clear
+        stack.clear();
+        assert_eq!(stack.len(), 0);
+    }
+    
+    #[test]
+    fn test_stack_with_type_constraint() {
+        let mut stack = Stack::with_type(|s: &String| s.starts_with("valid_"));
+        
+        assert!(stack.push("valid_item".to_string()).is_ok());
+        assert!(stack.push("invalid_item".to_string()).is_err());
+        assert_eq!(stack.len(), 1);
+    }
+    
+    #[test]
+    fn test_stackset_operations() {
+        let mut stackset = StackSet::new();
+        
+        // Test push with uniqueness
+        assert!(stackset.push("item1".to_string()).is_ok());
+        assert!(stackset.push("item2".to_string()).is_ok());
+        assert!(stackset.push("item1".to_string()).is_ok()); // Should move to top
+        
+        assert!(stackset.contains(&"item1".to_string()));
+        assert!(stackset.contains(&"item2".to_string()));
+        assert!(!stackset.contains(&"item3".to_string()));
+    }
+    
+    #[test]
+    fn test_tset_operations() {
+        let mut tset = TSet::new();
+        
+        assert!(tset.add("item1".to_string()).is_ok());
+        assert!(tset.add("item2".to_string()).is_ok());
+        assert!(tset.add("item1".to_string()).is_ok()); // Duplicate should be fine
+        
+        assert_eq!(tset.len(), 2); // Sets contain unique elements
+        assert!(tset.contains(&"item1".to_string()));
+        assert!(tset.contains(&"item2".to_string()));
+        
+        tset.clear();
+        assert_eq!(tset.len(), 0);
+    }
+    
+    #[test]
+    fn test_tset_with_type_constraint() {
+        let mut tset = TSet::with_type(|s: &String| s.len() <= 5);
+        
+        assert!(tset.add("short".to_string()).is_ok());
+        assert!(tset.add("toolongstring".to_string()).is_err());
+        assert_eq!(tset.len(), 1);
+    }
+    
+    // Tests for semantic types
+    #[test]
+    fn test_atomic_creation() {
+        // Valid atomic values
+        assert!(Atomic::new("hello").is_ok());
+        assert!(Atomic::new("test_atom").is_ok());
+        assert!(Atomic::new("atom-with-dash").is_ok());
+        assert!(Atomic::new("atom+with+plus").is_ok());
+        assert!(Atomic::new("atom:with:colon").is_ok());
+        
+        // Invalid atomic values
+        assert!(Atomic::new("").is_err()); // Empty
+        assert!(Atomic::new("yes").is_err()); // Reserved word
+        assert!(Atomic::new("no").is_err()); // Reserved word
+        assert!(Atomic::new("123invalid").is_err()); // Starts with number
+        assert!(Atomic::new("invalid@char").is_err()); // Invalid character
+    }
+    
+    #[test]
+    fn test_ind_creation_and_display() {
+        let ind = Ind::new("paris").unwrap();
+        assert_eq!(ind.to_string(), "paris");
+        
+        assert!(Ind::new("").is_err());
+        assert!(Ind::new("invalid@").is_err());
+    }
+    
+    #[test]
+    fn test_pred0_creation_and_display() {
+        let pred = Pred0::new("expensive").unwrap();
+        assert_eq!(pred.to_string(), "expensive");
+        
+        assert!(Pred0::new("").is_err());
+        assert!(Pred0::new("yes").is_err());
+    }
+    
+    #[test]
+    fn test_pred1_creation_and_apply() {
+        let pred1 = Pred1::new("city").unwrap();
+        let ind = Ind::new("paris").unwrap();
+        
+        let prop = pred1.apply(&ind).unwrap();
+        assert_eq!(prop.to_string(), "city(paris)");
+        assert!(prop.yes);
+        
+        assert!(Pred1::new("").is_err());
+    }
+    
+    #[test]
+    fn test_sort_creation() {
+        let sort = Sort::new("city").unwrap();
+        assert_eq!(sort.to_string(), "city");
+        
+        assert!(Sort::new("").is_err());
+    }
+    
+    #[test]
+    fn test_prop_creation_and_parsing() {
+        // Test basic proposition
+        let prop = Prop::new("expensive").unwrap();
+        assert_eq!(prop.to_string(), "expensive()");
+        assert!(prop.yes);
+        
+        // Test negated proposition
+        let prop = Prop::new("-expensive").unwrap();
+        assert_eq!(prop.to_string(), "-expensive()");
+        assert!(!prop.yes);
+        
+        // Test proposition with individual
+        let prop = Prop::new("city(paris)").unwrap();
+        assert_eq!(prop.to_string(), "city(paris)");
+        assert!(prop.yes);
+        assert_eq!(prop.ind.as_ref().unwrap().to_string(), "paris");
+    }
+    
+    #[test]
+    fn test_shortans_creation_and_parsing() {
+        // Positive short answer
+        let ans = ShortAns::new("paris").unwrap();
+        assert_eq!(ans.to_string(), "paris");
+        assert!(ans.yes);
+        
+        // Negative short answer  
+        let ans = ShortAns::new("-paris").unwrap();
+        assert_eq!(ans.to_string(), "-paris");
+        assert!(!ans.yes);
+        
+        assert!(ShortAns::new("").is_err());
+    }
+    
+    #[test]
+    fn test_yesno_creation() {
+        let yes_ans = YesNo::new("yes").unwrap();
+        assert_eq!(yes_ans.to_string(), "yes");
+        assert!(yes_ans.yes);
+        
+        let no_ans = YesNo::new("no").unwrap();
+        assert_eq!(no_ans.to_string(), "no");
+        assert!(!no_ans.yes);
+        
+        assert!(YesNo::new("maybe").is_err());
+    }
+    
+    #[test]
+    fn test_ans_enum_parsing() {
+        // Test yes/no parsing
+        let ans = Ans::new("yes").unwrap();
+        match ans {
+            Ans::YesNo(yesno) => assert!(yesno.yes),
+            _ => panic!("Expected YesNo variant"),
+        }
+        
+        // Test short answer parsing
+        let ans = Ans::new("paris").unwrap();
+        match ans {
+            Ans::ShortAns(short) => {
+                assert_eq!(short.to_string(), "paris");
+                assert!(short.yes);
+            },
+            _ => panic!("Expected ShortAns variant"),
+        }
+        
+        // Test proposition parsing
+        let ans = Ans::new("city(paris)").unwrap();
+        match ans {
+            Ans::Prop(prop) => {
+                assert_eq!(prop.to_string(), "city(paris)");
+                assert!(prop.yes);
+            },
+            _ => panic!("Expected Prop variant"),
+        }
+        
+        assert!(Ans::new("invalid(syntax").is_err());
+    }
+    
+    #[test] 
+    fn test_whq_creation_and_parsing() {
+        // Test standard wh-question format
+        let whq = WhQ::new("?x.city(x)").unwrap();
+        assert_eq!(whq.pred.to_string(), "city");
+        
+        // Test simplified format
+        let whq = WhQ::new("city").unwrap();
+        assert_eq!(whq.pred.to_string(), "city");
+        
+        assert!(WhQ::new("").is_err());
+    }
+    
+    #[test]
+    fn test_ynq_creation_and_parsing() {
+        let ynq = YNQ::new("?expensive").unwrap();
+        assert_eq!(ynq.prop.to_string(), "expensive()");
+        
+        let ynq = YNQ::new("expensive").unwrap();
+        assert_eq!(ynq.prop.to_string(), "expensive()");
+        
+        assert!(YNQ::new("").is_err());
+    }
+    
+    #[test]
+    fn test_question_enum_parsing() {
+        // Test wh-question parsing
+        let q = Question::new("?x.city(x)").unwrap();
+        match q {
+            Question::WhQ(whq) => assert_eq!(whq.pred.to_string(), "city"),
+            _ => panic!("Expected WhQ variant"),
+        }
+        
+        // Test yes/no question parsing
+        let q = Question::new("?expensive").unwrap();
+        match q {
+            Question::YNQ(ynq) => assert_eq!(ynq.prop.pred.to_string(), "expensive"),
+            _ => panic!("Expected YNQ variant"),
+        }
+        
+        assert!(Question::new("invalid").is_err());
+    }
+    
+    // Tests for dialogue components
+    #[test]
+    fn test_dialogue_moves() {
+        // Test Greet
+        let greet = Greet;
+        assert_eq!(greet.to_string(), "Greet()");
+        
+        // Test Quit
+        let quit = Quit;
+        assert_eq!(quit.to_string(), "Quit()");
+        
+        // Test Ask
+        let question = Question::new("?expensive").unwrap();
+        let ask = Ask::new(question);
+        assert!(ask.to_string().contains("Ask"));
+        assert!(ask.to_string().contains("expensive"));
+        
+        // Test Answer
+        let answer_content = Ans::new("yes").unwrap();
+        let answer = Answer::new(answer_content);
+        assert!(answer.to_string().contains("Answer"));
+        assert!(answer.to_string().contains("yes"));
+    }
+    
+    #[test]
+    fn test_icm_creation() {
+        let icm = ICM::new("per", "pos", Some("understood".to_string()));
+        assert_eq!(icm.to_string(), "icm:per*pos:'understood'");
+        
+        let icm_no_content = ICM::new("sem", "neg", None);
+        assert_eq!(icm_no_content.to_string(), "icm:sem*neg");
+    }
+    
+    #[test]
+    fn test_plan_constructors() {
+        let question = Question::new("?expensive").unwrap();
+        
+        // Test Respond
+        let respond = Respond::new(question.clone());
+        assert!(respond.to_string().contains("Respond"));
+        assert!(respond.to_string().contains("expensive"));
+        
+        // Test ConsultDB
+        let consult = ConsultDB::new(question.clone());
+        assert!(consult.to_string().contains("ConsultDB"));
+        assert!(consult.to_string().contains("expensive"));
+        
+        // Test Findout
+        let findout = Findout::new(question.clone());
+        assert!(findout.to_string().contains("Findout"));
+        assert!(findout.to_string().contains("expensive"));
+        
+        // Test Raise
+        let raise = Raise::new(question.clone());
+        assert!(raise.to_string().contains("Raise"));
+        assert!(raise.to_string().contains("expensive"));
+        
+        // Test If
+        let if_plan = If::new(
+            question, 
+            vec!["ConsultDB".to_string()], 
+            vec!["Greet".to_string()]
+        );
+        assert!(if_plan.to_string().contains("If"));
+    }
+    
+    // Tests for grammar functionality
+    #[test]
+    fn test_simple_gen_grammar() {
+        let mut grammar = SimpleGenGrammar::new();
+        
+        // Test adding custom forms
+        grammar.add_form("Ask('?price')", "What is the price?");
+        grammar.add_form("Answer(paris)", "The answer is Paris.");
+        
+        // Test generation
+        let mut moves = TSet::new();
+        moves.add("Greet()".to_string()).unwrap();
+        let output = grammar.generate(&moves);
+        assert_eq!(output, "Hello.");
+        
+        // Test interpretation - "quit" is handled as special case in the grammar
+        let interpreted = grammar.interpret("quit");
+        assert!(interpreted.is_some());
+        let moves = interpreted.unwrap();
+        assert!(moves.elements.iter().any(|m| m.contains("Quit")));
+        
+        // Test question interpretation  
+        let interpreted = grammar.interpret("?expensive");
+        assert!(interpreted.is_some());
+        let moves = interpreted.unwrap();
+        assert!(moves.elements.iter().any(|m| m.contains("Ask") && m.contains("expensive")));
+        
+        // Test answer interpretation
+        let interpreted = grammar.interpret("yes");
+        assert!(interpreted.is_some());
+        let moves = interpreted.unwrap();
+        assert!(moves.elements.iter().any(|m| m.contains("Answer") && m.contains("yes")));
+        
+        // Test unrecognized input
+        let interpreted = grammar.interpret("random gibberish");
+        assert!(interpreted.is_none());
+    }
+    
+    // Tests for database functionality
+    #[test]
+    fn test_travel_db() {
+        let mut db = TravelDB::new();
+        
+        // Add sample entries
+        let mut entry1 = HashMap::new();
+        entry1.insert("from".to_string(), "paris".to_string());
+        entry1.insert("to".to_string(), "london".to_string());
+        entry1.insert("day".to_string(), "monday".to_string());
+        entry1.insert("price".to_string(), "200".to_string());
+        db.add_entry(entry1);
+        
+        let mut entry2 = HashMap::new();
+        entry2.insert("from".to_string(), "london".to_string());
+        entry2.insert("to".to_string(), "paris".to_string());
+        entry2.insert("day".to_string(), "tuesday".to_string());
+        entry2.insert("price".to_string(), "180".to_string());
+        db.add_entry(entry2);
+        
+        // Test lookup
+        let result = db.lookup_entry("paris", "london", "monday");
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().get("price"), Some(&"200".to_string()));
+        
+        let no_result = db.lookup_entry("invalid", "route", "never");
+        assert!(no_result.is_none());
+        
+        // Test context retrieval (using mock context)
+        let mut context = TSet::new();
+        let prop1 = Prop {
+            pred: Pred0::new("depart_city").unwrap(),
+            ind: Some(Ind::new("paris").unwrap()),
+            yes: true,
+        };
+        context.add(prop1).unwrap();
+        
+        let context_value = db.get_context(&context, "depart_city");
+        assert_eq!(context_value, Some("paris".to_string()));
+        
+        let no_context = db.get_context(&context, "nonexistent");
+        assert_eq!(no_context, None);
+    }
+    
+    // Tests for domain functionality
+    #[test]
+    fn test_domain_creation_and_operations() {
+        let preds0 = HashSet::from(["expensive".to_string(), "available".to_string()]);
+        let mut preds1 = HashMap::new();
+        preds1.insert("city".to_string(), "location".to_string());
+        preds1.insert("transport".to_string(), "vehicle".to_string());
+        
+        let mut sorts = HashMap::new();
+        sorts.insert("location".to_string(), HashSet::from(["paris".to_string(), "london".to_string()]));
+        sorts.insert("vehicle".to_string(), HashSet::from(["plane".to_string(), "train".to_string()]));
+        
+        let mut domain = Domain::new(preds0, preds1, sorts);
+        
+        // Test individuals are correctly inferred
+        assert_eq!(domain.inds.get("paris"), Some(&"location".to_string()));
+        assert_eq!(domain.inds.get("plane"), Some(&"vehicle".to_string()));
+        
+        // Test adding plans
+        let question = Question::new("?expensive").unwrap();
+        let plan = vec!["ConsultDB".to_string(), "Respond".to_string()];
+        domain.add_plan(question.clone(), plan);
+        
+        let retrieved_plan = domain.get_plan(&question);
+        assert!(retrieved_plan.is_some());
+        let plan_stack = retrieved_plan.unwrap();
+        assert_eq!(plan_stack.len(), 2);
+        
+        // Test relevance checking
+        let ans_yes = Ans::new("yes").unwrap();
+        let ynq = Question::new("?expensive").unwrap();
+        assert!(domain.relevant(&ans_yes, &ynq));
+        
+        let ans_paris = Ans::new("paris").unwrap();
+        let whq = Question::new("?x.city(x)").unwrap();
+        assert!(domain.relevant(&ans_paris, &whq));
+        
+        // Test resolution checking
+        let ans_yes = Ans::new("yes").unwrap();
+        let ynq = Question::new("?expensive").unwrap();
+        assert!(domain.resolves(&ans_yes, &ynq));
+        
+        let ans_no = Ans::new("no").unwrap();
+        assert!(domain.resolves(&ans_no, &ynq));
+        
+        // Test combination
+        let combined = domain.combine(&whq, &ans_paris);
+        assert!(combined.is_ok());
+        let prop = combined.unwrap();
+        assert_eq!(prop.pred.to_string(), "city");
+        assert_eq!(prop.ind.as_ref().unwrap().to_string(), "paris");
+    }
+    
+    // Test for enums
+    #[test]
+    fn test_speaker_enum() {
+        let usr = Speaker::new("USR").unwrap();
+        assert_eq!(usr.to_string(), "USR");
+        
+        let sys = Speaker::new("SYS").unwrap();  
+        assert_eq!(sys.to_string(), "SYS");
+        
+        assert!(Speaker::new("INVALID").is_none());
+    }
+    
+    #[test]
+    fn test_program_state_enum() {
+        let run = ProgramState::new("RUN").unwrap();
+        assert_eq!(run.to_string(), "RUN");
+        
+        let quit = ProgramState::new("QUIT").unwrap();
+        assert_eq!(quit.to_string(), "QUIT");
+        
+        assert!(ProgramState::new("INVALID").is_none());
+    }
+    
+    // Tests for input handlers
+    #[test]
+    fn test_demo_input_handler() {
+        let inputs = vec!["hello".to_string(), "?expensive".to_string(), "quit".to_string()];
+        let mut handler = DemoInputHandler::new(inputs);
+        
+        assert!(handler.has_input());
+        assert_eq!(handler.read_line(), Some("hello".to_string()));
+        
+        assert!(handler.has_input());
+        assert_eq!(handler.read_line(), Some("?expensive".to_string()));
+        
+        assert!(handler.has_input());
+        assert_eq!(handler.read_line(), Some("quit".to_string()));
+        
+        assert!(!handler.has_input());
+        assert_eq!(handler.read_line(), None);
+    }
+    
+    // Integration test for IBISController
+    #[test]
+    fn test_ibis_controller_creation() {
+        // Create domain
+        let preds0 = HashSet::from(["expensive".to_string()]);
+        let preds1 = HashMap::from([("city".to_string(), "location".to_string())]);
+        let sorts = HashMap::from([("location".to_string(), HashSet::from(["paris".to_string()]))]);
+        let domain = Domain::new(preds0, preds1, sorts);
+        
+        // Create database
+        let database = TravelDB::new();
+        
+        // Create grammar
+        let grammar = SimpleGenGrammar::new();
+        
+        // Create demo input handler
+        let inputs = vec!["hello".to_string(), "quit".to_string()];
+        let input_handler = Box::new(DemoInputHandler::new(inputs));
+        
+        // Create controller
+        let controller = IBISController::with_input_handler(domain, database, grammar, input_handler);
+        
+        // Basic assertion that controller was created successfully
+        assert!(matches!(controller.mivs.program_state.get(), None)); // Initially unset
     }
 }

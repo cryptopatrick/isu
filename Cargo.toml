@@ -17,9 +17,6 @@ autotests = false
 name = "isu"
 path = "src/lib.rs"
 
-[[bin]]
-name = "isu"
-path = "examples/travel.rs"
 
 
 [[test]]
