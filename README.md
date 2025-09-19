@@ -193,7 +193,7 @@ Comprehensive documentation is available at [docs.rs/isu](https://docs.rs/isu), 
 ## 🖊 Author
 
 CryptoPatrick  
- <a href="https://x.com/cryptopatrick"><img src="https://github.com/cryptopatrick/factory/blob/master/img/x.png" />CryptoPatrick</a>  
+ <a href="https://x.com/cryptopatrick"><img width=100 height=100 src="https://github.com/cryptopatrick/factory/blob/master/img/x.png" /></a>  
 Keybase Verification:  
 https://keybase.io/cryptopatrick/sigs/8epNh5h2FtIX1UNNmf8YQ-k33M8J-Md4LnAN
 
