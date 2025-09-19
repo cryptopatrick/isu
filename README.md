@@ -21,49 +21,12 @@
         <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status">
     </a>
 
-    
-    <!--
-    <a href="https://github.com/sulu/sulu/releases" target="_blank">
-        <img src="https://img.shields.io/github/tag/sulu/sulu.svg" alt="GitHub tag (latest SemVer)">
-    </a>
-    <a href="https://github.com/sulu/sulu/commits" target="_blank">
-        <img src="https://img.shields.io/github/commit-activity/y/sulu/sulu.svg" alt="GitHub commit activity">
-    </a>
-    <a href="https://github.com/sulu/sulu/graphs/contributors" target="_blank">
-        <img src="https://img.shields.io/github/contributors-anon/sulu/sulu.svg" alt="GitHub contributors">
-    </a>
-    <a href="https://packagist.org/packages/sulu/sulu" target="_blank">
-        <img src="https://img.shields.io/packagist/dt/sulu/sulu.svg" alt="Packagist downloads">
-    </a>
-
-    [![Crates.io](https://img.shields.io/crates/d/<your-crate>)](https://crates.io/crates/<your-crate>)
-    [![Crates.io](https://img.shields.io/crates/dv/<your-crate>)](https://crates.io/crates/<your-crate>)
-    [![Crates.io](https://img.shields.io/crates/v/<your-crate>)](https://crates.io/crates/<your-crate>)
-    [![Downloads per version](https://img.shields.io/crates/dv/isu)](https://crates.io/crates/isu)
-    -->
-
   [![Crates.io](https://img.shields.io/crates/v/isu)](https://crates.io/crates/isu)
   [![Downloads](https://img.shields.io/crates/d/isu)](https://crates.io/crates/isu)
   [![Documentation](https://docs.rs/isu/badge.svg)](https://docs.rs/isu)
 
 </p>
 <br/>
-
-<!--
-<p align="center">
-  <a href="https://badge.fury.io/js/electron-markdownify">
-    <img src="https://badge.fury.io/js/electron-markdownify.svg"
-         alt="Gitter">
-  </a>
-
-  <a href="https://saythanks.io/to/bullredeyes@gmail.com">
-      <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
-  </a>
-  <a href="https://www.paypal.me/CryptoPatrick">
-    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
-  </a>
-</p>
--->
 
 <p align="center">
   <a href="#what-is-isu">What is ISU</a> •
@@ -112,7 +75,7 @@
 
 
 
-## What is ISU
+## 🤔 What is ISU
 
 `isu` is a comprehensive Rust library that implements Information State Update (ISU) theory, a formal framework for dialogue management in conversational AI systems. This library provides the core components needed to build sophisticated dialogue managers following the Issue-Based Information State (IBIS) approach.
 
@@ -133,7 +96,7 @@ The library follows ISU theory principles:
 3. **Dialogue Management**: Control flow for turn-taking and planning
 4. **Semantic Interpretation**: Mapping between natural language and formal representations
 
-## Features
+## 🎏 Features
 
 ###  Core Data Structures
 - **Value**: Generic containers with type constraints and validation
