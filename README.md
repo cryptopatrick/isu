@@ -10,29 +10,28 @@
   <br>
 </h1>
 
-<h4 align="center">Rust implementation of <a href="https://link.springer.com/chapter/10.1007/978-94-010-0019-2_15" target="_blank">Information State Update</a> theory.</h4>
+<h4 align="center">Rust implementation of <a href="https://link.springer.com/chapter/10.1007/978-94-010-0019-2_15" target="_blank">Information State Update.</a></h4>
 
 <br/>
 <p align="center">
     <a href="LICENSE" target="_blank">
         <img src="https://img.shields.io/github/license/sulu/sulu.svg" alt="GitHub license">
     </a>
+    <a href="https://github.com/sulu/sulu/actions" target="_blank">
+        <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status">
+    </a>
+
+    
     <!--
     <a href="https://github.com/sulu/sulu/releases" target="_blank">
         <img src="https://img.shields.io/github/tag/sulu/sulu.svg" alt="GitHub tag (latest SemVer)">
     </a>
-    -->
-    <a href="https://github.com/sulu/sulu/actions" target="_blank">
-        <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status">
-    </a>
     <a href="https://github.com/sulu/sulu/commits" target="_blank">
         <img src="https://img.shields.io/github/commit-activity/y/sulu/sulu.svg" alt="GitHub commit activity">
     </a>
-    <!--
     <a href="https://github.com/sulu/sulu/graphs/contributors" target="_blank">
         <img src="https://img.shields.io/github/contributors-anon/sulu/sulu.svg" alt="GitHub contributors">
     </a>
-    -->
     <a href="https://packagist.org/packages/sulu/sulu" target="_blank">
         <img src="https://img.shields.io/packagist/dt/sulu/sulu.svg" alt="Packagist downloads">
     </a>
@@ -40,12 +39,12 @@
     [![Crates.io](https://img.shields.io/crates/d/<your-crate>)](https://crates.io/crates/<your-crate>)
     [![Crates.io](https://img.shields.io/crates/dv/<your-crate>)](https://crates.io/crates/<your-crate>)
     [![Crates.io](https://img.shields.io/crates/v/<your-crate>)](https://crates.io/crates/<your-crate>)
+    [![Downloads per version](https://img.shields.io/crates/dv/isu)](https://crates.io/crates/isu)
+    -->
 
-
-[![Crates.io](https://img.shields.io/crates/v/my-crate)](https://crates.io/crates/my-crate)
-[![Downloads](https://img.shields.io/crates/d/my-crate)](https://crates.io/crates/my-crate)
-[![Downloads per version](https://img.shields.io/crates/dv/my-crate)](https://crates.io/crates/my-crate)
-
+  [![Crates.io](https://img.shields.io/crates/v/isu)](https://crates.io/crates/isu)
+  [![Downloads](https://img.shields.io/crates/d/isu)](https://crates.io/crates/isu)
+  [![Documentation](https://docs.rs/isu/badge.svg)](https://docs.rs/isu)
 
 </p>
 <br/>
@@ -78,7 +77,7 @@
 
 ---
 
-## Important Notices
+## 🛎 Important Notices
 * `master` branch file paths are **not** considered stable. [Verify your repository URI references](#unstable-file-paths)
 * cloning this repository is **not** recommended ([due to Repo size](#option-9-clone-the-repo)) unless you are going to be [contributing to development](#contributing)
 
@@ -89,13 +88,13 @@
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project"> ➤ About The Project</a></li>
-    <li><a href="#prerequisites"> ➤ Prerequisites</a></li>
-    <li><a href="#folder-structure"> ➤ Folder Structure</a></li>
-    <li><a href="#dataset"> ➤ Dataset</a></li>
-    <li><a href="#roadmap"> ➤ Roadmap</a></li>
+    <li><a href="#about-the-project"> About The Project</a></li>
+    <li><a href="#prerequisites"> Prerequisites</a></li>
+    <li><a href="#folder-structure"> Folder Structure</a></li>
+    <li><a href="#dataset"> Dataset</a></li>
+    <li><a href="#roadmap"> Roadmap</a></li>
     <li>
-      <a href="#preprocessing"> ➤ Preprocessing</a>
+      <a href="#preprocessing"> Preprocessing</a>
       <ul>
         <li><a href="#preprocessed-data">Pre-processed data</a></li>
         <li><a href="#statistical-feature">Statistical feature</a></li>
@@ -103,9 +102,9 @@
       </ul>
     </li>
     <!--<li><a href="#experiments">Experiments</a></li>-->
-    <li><a href="#results-and-discussion"> ➤ Results and Discussion</a></li>
-    <li><a href="#references"> ➤ References</a></li>
-    <li><a href="#contributors"> ➤ Contributors</a></li>
+    <li><a href="#results-and-discussion"> Results and Discussion</a></li>
+    <li><a href="#references"> References</a></li>
+    <li><a href="#contributors"> Contributors</a></li>
   </ol>
 </details>
 
@@ -114,10 +113,6 @@
 
 
 ## What is ISU
-
-**A Rust implementation of Information State Update (ISU) theory for dialogue management and conversational AI systems**
-
-### Overview
 
 `isu` is a comprehensive Rust library that implements Information State Update (ISU) theory, a formal framework for dialogue management in conversational AI systems. This library provides the core components needed to build sophisticated dialogue managers following the Issue-Based Information State (IBIS) approach.
 
@@ -138,55 +133,49 @@ The library follows ISU theory principles:
 3. **Dialogue Management**: Control flow for turn-taking and planning
 4. **Semantic Interpretation**: Mapping between natural language and formal representations
 
-[![Crates.io](https://img.shields.io/crates/v/isu.svg)](https://crates.io/crates/isu)
-[![Documentation](https://docs.rs/isu/badge.svg)](https://docs.rs/isu)
-[![License](https://img.shields.io/badge/license-MIT%2FUnlicense-blue.svg)](https://github.com/cryptopatrick/isu)
-
-
 ## Features
 
-### 📊 **Core Data Structures**
+###  Core Data Structures
 - **Value**: Generic containers with type constraints and validation
 - **Stack/StackSet**: LIFO data structures with uniqueness guarantees
 - **TSet**: Typed sets with optional type checking
 - **Record**: Key-value stores with dynamic type validation
 
-### 🗣️ **Dialogue Management**
+###  **Dialogue Management**
 - **IBIS Controller**: Full implementation of Issue-Based Information State dialogue management
 - **Information State**: Tracks dialogue context, beliefs, commitments, and questions under discussion (QUD)
 - **Dialogue Moves**: Support for greetings, questions, answers, and ICM (Information State Update Control Mechanisms)
 
-### 🧠 **Semantic Types & Questions**
+###  **Semantic Types & Questions**
 - **Propositions**: Structured representation of facts with polarity
 - **Questions**: Support for wh-questions, yes/no questions, and alternative questions
 - **Individuals & Predicates**: Typed semantic objects with domain validation
 - **Answer Types**: Short answers, propositions, and yes/no responses
 
-### 📝 **Natural Language Processing**
+###  **Natural Language Processing**
 - **Grammar System**: Configurable generation and interpretation of dialogue moves
 - **CFG Support**: Context-free grammar parsing capabilities
 - **Multi-modal Input**: Support for different input handling strategies (interactive, demo, batch)
 
-### 🗄️ **Knowledge Management**
+###  **Knowledge Management**
 - **Domain Knowledge**: Formal representation of predicates, sorts, and individuals
 - **Database Integration**: Query interface for external knowledge sources
 - **Plan Constructors**: Conditional planning with findout, consult, and response strategies
 
-### 🎯 **Travel Domain Example**
+### **Travel Domain Example**
 - Complete implementation of a travel booking dialogue system
 - Demonstrates price queries, destination planning, and multi-turn conversations
 - Includes sample database entries and conversational flows
 
 
 
-## 👋🏻 How to Use
+## 🚙 How to Use
 
-
-### ✅ Requirements
+### Requirements
 Revup requires python 3.8 or higher and git 2.43 or higher. Revup works with Linux, OSX, and Windows (limited testing).
 Follow instructions here to get the latest git version for your OS. Revup uses flags only present in newer git versions.
 
-### 🚀 Installation
+### Installation
 
 Install with cargo.
 
@@ -222,7 +211,7 @@ let mut ibis = IBISController::new(domain, database, grammar);
 ibis.run();
 ```
 
-## Documentation
+## 📚 Documentation
 
 Comprehensive documentation is available at [docs.rs/isu](https://docs.rs/isu), including:
 - API reference for all public types and functions
@@ -232,19 +221,16 @@ Comprehensive documentation is available at [docs.rs/isu](https://docs.rs/isu), 
 
 ---
 
-## 📫  Contact the Author
+## 🖊 Author
 
 CryptoPatrick  
 Verification: https://keybase.io/cryptopatrick/sigs/8epNh5h2FtIX1UNNmf8YQ-k33M8J-Md4LnAN
 
 GitHub Badge Twitter Badge
 
-## Support
-Leave a ⭐ If you think this project is cool.
-
-If you like this project and think it has helped in any way, consider buying me a coffee!
-You can also bless my day by donating some cryptocurrency.
-
+## 🐣 Support
+Leave a ⭐ If you think this project is cool, and if you think it has helped in 
+any way, consider [!buying me a coffee!](https://github.com/cryptopatrick/factory/blob/master/img/bmc-button.png)
 
 ## 🤝 Contributing
 
@@ -254,8 +240,7 @@ Contributions are welcome! Please see our [contributing guidelines](CONTRIBUTING
 - Submitting bug reports and feature requests
 - Development setup and workflow
 
-## 📘 License
-
-This project is dual-licensed under MIT and Unlicense. See [LICENSE-MIT](LICENSE-MIT) and [UNLICENSE](UNLICENSE) for details.
+## 🗄 License
+This project is licensed under MIT. See [LICENSE-MIT](LICENSE-MIT) for details.
 
 
