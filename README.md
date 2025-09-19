@@ -2,7 +2,7 @@
   <br>
   <a href="https://www.cryptopatrick.com/projects/isu">
   <img 
-    src="https://raw.githubusercontent.com/cryptopatrick/factory/blob/master/img/markdownify.png" alt="Title" 
+    src="https://github.com/cryptopatrick/factory/blob/master/img/markdownify.png" alt="Title" 
     width="200">
   </a>
   <br>
@@ -10,37 +10,53 @@
   <br>
 </h1>
 
-<h4 align="center">A minimal Markdown Editor desktop app built on top of <a href="http://electron.atom.io" target="_blank">Electron</a>.</h4>
+<h4 align="center">Rust implementation of <a href="https://link.springer.com/chapter/10.1007/978-94-010-0019-2_15" target="_blank">Information State Update</a> theory.</h4>
 
 <br/>
 <p align="center">
     <a href="LICENSE" target="_blank">
         <img src="https://img.shields.io/github/license/sulu/sulu.svg" alt="GitHub license">
     </a>
+    <!--
     <a href="https://github.com/sulu/sulu/releases" target="_blank">
         <img src="https://img.shields.io/github/tag/sulu/sulu.svg" alt="GitHub tag (latest SemVer)">
     </a>
+    -->
     <a href="https://github.com/sulu/sulu/actions" target="_blank">
         <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status">
     </a>
     <a href="https://github.com/sulu/sulu/commits" target="_blank">
         <img src="https://img.shields.io/github/commit-activity/y/sulu/sulu.svg" alt="GitHub commit activity">
     </a>
+    <!--
     <a href="https://github.com/sulu/sulu/graphs/contributors" target="_blank">
         <img src="https://img.shields.io/github/contributors-anon/sulu/sulu.svg" alt="GitHub contributors">
     </a>
+    -->
     <a href="https://packagist.org/packages/sulu/sulu" target="_blank">
         <img src="https://img.shields.io/packagist/dt/sulu/sulu.svg" alt="Packagist downloads">
     </a>
+
+    [![Crates.io](https://img.shields.io/crates/d/<your-crate>)](https://crates.io/crates/<your-crate>)
+    [![Crates.io](https://img.shields.io/crates/dv/<your-crate>)](https://crates.io/crates/<your-crate>)
+    [![Crates.io](https://img.shields.io/crates/v/<your-crate>)](https://crates.io/crates/<your-crate>)
+
+
+[![Crates.io](https://img.shields.io/crates/v/my-crate)](https://crates.io/crates/my-crate)
+[![Downloads](https://img.shields.io/crates/d/my-crate)](https://crates.io/crates/my-crate)
+[![Downloads per version](https://img.shields.io/crates/dv/my-crate)](https://crates.io/crates/my-crate)
+
+
 </p>
 <br/>
 
+<!--
 <p align="center">
   <a href="https://badge.fury.io/js/electron-markdownify">
     <img src="https://badge.fury.io/js/electron-markdownify.svg"
          alt="Gitter">
   </a>
-  <a href="https://gitter.im/cryptopatrick/electron-markdownify"><img src="https://badges.gitter.im/cryptopatrick/electron-markdownify.svg"></a>
+
   <a href="https://saythanks.io/to/bullredeyes@gmail.com">
       <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
   </a>
@@ -48,9 +64,9 @@
     <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
   </a>
 </p>
+-->
 
 <p align="center">
-  <a href="#table-of-contents">Table of Contents</a> •
   <a href="#what-is-isu">What is ISU</a> •
   <a href="#features">Features</a> •
   <a href="#how-to-use">How To Use</a> •
@@ -58,7 +74,7 @@
   <a href="#license">License</a>
 </p>
 
-![screenshot](https://raw.githubusercontent.com/cryptopatrick/factory/blob/master/img/markdownify.gif)
+![screenshot](https://github.com/cryptopatrick/factory/blob/master/img/markdownify.gif)
 
 ---
 
