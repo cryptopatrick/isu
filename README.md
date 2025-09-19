@@ -9,36 +9,31 @@
   </a>
   <br>
   ISU
+  <br>
 </h1>
 
 <h4 align="center">
   Rust implementation of 
   <a href="https://link.springer.com/chapter/10.1007/978-94-010-0019-2_15" target="_blank">
-    Information State Update
-  </a>.
-</h4>
-
-<br/>
+    Information State Update</a>.</h4>
 
 <p align="center">
-  <a href="LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/sulu/sulu.svg" alt="GitHub license"/>
-  </a>
-  <a href="https://github.com/sulu/sulu/actions" target="_blank">
-    <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status"/>
-  </a>
   <a href="https://crates.io/crates/isu" target="_blank">
     <img src="https://img.shields.io/crates/v/isu" alt="Crates.io"/>
   </a>
   <a href="https://crates.io/crates/isu" target="_blank">
     <img src="https://img.shields.io/crates/d/isu" alt="Downloads"/>
   </a>
+  <a href="https://github.com/sulu/sulu/actions" target="_blank">
+    <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status"/>
+  </a>
   <a href="https://docs.rs/isu" target="_blank">
     <img src="https://docs.rs/isu/badge.svg" alt="Documentation"/>
   </a>
+  <a href="LICENSE" target="_blank">
+    <img src="https://img.shields.io/github/license/sulu/sulu.svg" alt="GitHub license"/>
+  </a>
 </p>
-
-<br/>
 
 <p align="center">
   <a href="#what-is-isu">What is ISU</a> •
@@ -47,7 +42,6 @@
   <a href="#documentation">Documentation</a> •
   <a href="#license">License</a>
 </p>
-
 
 ![screenshot](https://github.com/cryptopatrick/factory/blob/master/img/markdownify.gif)
 
