@@ -193,12 +193,13 @@ Comprehensive documentation is available at [docs.rs/isu](https://docs.rs/isu), 
 ## 🖊 Author
 
 CryptoPatrick  
- https://x.com/cryptopatrick
-Verification: https://keybase.io/cryptopatrick/sigs/8epNh5h2FtIX1UNNmf8YQ-k33M8J-Md4LnAN
+ <a href="https://x.com/cryptopatrick"><img src="https://github.com/cryptopatrick/factory/blob/master/img/x.png" />CryptoPatrick</a>  
+Keybase Verification:  
+https://keybase.io/cryptopatrick/sigs/8epNh5h2FtIX1UNNmf8YQ-k33M8J-Md4LnAN
 
 ## 🐣 Support
-Leave a ⭐ If you think this project is cool, and if you think it has helped in 
-any way, consider [!buying me a coffee!](https://github.com/cryptopatrick/factory/blob/master/img/bmc-button.png)
+Leave a ⭐ If you think this project is cool.  
+If you think it has helped in any way, consider [!buying me a coffee!](https://github.com/cryptopatrick/factory/blob/master/img/bmc-button.png)
 
 ## 🤝 Contributing
 
