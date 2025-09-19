@@ -2,7 +2,7 @@
   <br>
   <a href="https://www.cryptopatrick.com/projects/isu">
     <img 
-      src="https://github.com/cryptopatrick/factory/blob/master/img/markdownify.png" 
+      src="https://github.com/cryptopatrick/factory/blob/master/img/100days/isu.png" 
       alt="Title" 
       width="200"
     />
@@ -58,23 +58,27 @@
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project"> About The Project</a></li>
-    <li><a href="#prerequisites"> Prerequisites</a></li>
-    <li><a href="#folder-structure"> Folder Structure</a></li>
-    <li><a href="#dataset"> Dataset</a></li>
-    <li><a href="#roadmap"> Roadmap</a></li>
-    <li>
-      <a href="#preprocessing"> Preprocessing</a>
+    <li><a href="#what-is-isu"> What is ISU</a></li>
+    <li><a href="#features"> Features</a></li>
       <ul>
-        <li><a href="#preprocessed-data">Pre-processed data</a></li>
-        <li><a href="#statistical-feature">Statistical feature</a></li>
-        <li><a href="#topological-feature">Topological feature</a></li>
+        <li><a href="#core-data-structures"> Core Data Structures</a></li>
+        <li><a href="#dialogue-management">Dialogue Management</a></li>
+        <li><a href="#semantic-types-&-questions">Semantic Types & Questions</a></li>
+        <li><a href="#natural-language-processing">Natural Language Processing</a></li>
       </ul>
-    </li>
-    <!--<li><a href="#experiments">Experiments</a></li>-->
+    <li><a href="#how-to-use"> How to Use</a></li>
+    <li><a href="#documentation"> Documentation</a></li>
+    <li><a href="#author"> Author</a></li>
+    <li><a href="#support"> Support</a>
+    <li><a href="#contributing"> Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <!--
+    <li><a href="#experiments">Experiments</a></li>
     <li><a href="#results-and-discussion"> Results and Discussion</a></li>
     <li><a href="#references"> References</a></li>
     <li><a href="#contributors"> Contributors</a></li>
+    -->
+    </li>
   </ol>
 </details>
 
