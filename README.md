@@ -20,12 +20,18 @@
     <a href="https://github.com/sulu/sulu/actions" target="_blank">
         <img src="https://img.shields.io/github/actions/workflow/status/sulu/sulu/test-application.yaml" alt="Test workflow status">
     </a>
+    <a href="https://img.shields.io/crates/v/isu" target="_blank">
+        <img src="https://crates.io/crates/isu" alt="Test workflow status">
+    </a>
+
 
   [![Crates.io](https://img.shields.io/crates/v/isu)](https://crates.io/crates/isu)
+
   [![Downloads](https://img.shields.io/crates/d/isu)](https://crates.io/crates/isu)
   [![Documentation](https://docs.rs/isu/badge.svg)](https://docs.rs/isu)
 
 </p>
+
 <br/>
 
 <p align="center">
@@ -46,7 +52,7 @@
 
 
 <!-- TABLE OF CONTENTS -->
-<h2 id="table-of-contents"> :book: Table of Contents</h2>
+<h2 id="table-of-contents"> Table of Contents</h2>
 
 <details open="open">
   <summary>Table of Contents</summary>
