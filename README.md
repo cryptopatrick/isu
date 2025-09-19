@@ -45,7 +45,7 @@
 
 ![screenshot](https://github.com/cryptopatrick/factory/blob/master/img/markdownify.gif)
 
----
+
 
 ## 🛎 Important Notices
 * `master` branch file paths are **not** considered stable. [Verify your repository URI references](#unstable-file-paths)
@@ -53,7 +53,7 @@
 
 
 <!-- TABLE OF CONTENTS -->
-<h2 id="table-of-contents"> Table of Contents</h2>
+<h2 id="table-of-contents"> :pushpin: Table of Contents</h2>
 
 <details open="open">
   <summary>Table of Contents</summary>
@@ -103,7 +103,7 @@ The library follows ISU theory principles:
 3. **Dialogue Management**: Control flow for turn-taking and planning
 4. **Semantic Interpretation**: Mapping between natural language and formal representations
 
-## 🎏 Features
+## 📷 Features
 
 ###  Core Data Structures
 - **Value**: Generic containers with type constraints and validation
@@ -189,14 +189,12 @@ Comprehensive documentation is available at [docs.rs/isu](https://docs.rs/isu), 
 - Examples of different dialogue management strategies
 - Performance considerations and best practices
 
----
 
 ## 🖊 Author
 
 CryptoPatrick  
+ https://x.com/cryptopatrick
 Verification: https://keybase.io/cryptopatrick/sigs/8epNh5h2FtIX1UNNmf8YQ-k33M8J-Md4LnAN
-
-GitHub Badge Twitter Badge
 
 ## 🐣 Support
 Leave a ⭐ If you think this project is cool, and if you think it has helped in 
