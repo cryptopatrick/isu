@@ -10,7 +10,7 @@ repository = "https://github.com/cryptopatrick/isu"
 readme = "README.md"
 keywords = ["isu", "ai", "dialogue", "agent", "nlp"]
 categories = ["command-line-utilities"]
-license = "Unlicense/MIT"
+license = "MIT"
 autotests = false
 
 [lib]

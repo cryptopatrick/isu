@@ -212,6 +212,6 @@ Contributions are welcome! Please see our [contributing guidelines](CONTRIBUTING
 - Development setup and workflow
 
 ## 🗄 License
-This project is licensed under MIT. See [LICENSE-MIT](LICENSE-MIT) for details.
+This project is licensed under MIT. See [LICENSE](LICENSE) for details.
 
 
