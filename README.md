@@ -44,8 +44,9 @@
   <a href="#license">License</a>
 </p>
 
+<!--
 ![screenshot](https://github.com/cryptopatrick/factory/blob/master/img/markdownify.gif)
-
+-->
 
 
 ## 🛎 Important Notices
