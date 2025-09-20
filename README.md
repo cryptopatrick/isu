@@ -1,12 +1,10 @@
 <h1 align="center">
   <br>
-  <a href="https://www.cryptopatrick.com/projects/isu">
     <img 
       src="https://github.com/cryptopatrick/factory/blob/master/img/100days/isu.png" 
       alt="Title" 
       width="200"
     />
-  </a>
   <br>
   ISU
   <br>
