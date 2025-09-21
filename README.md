@@ -34,11 +34,11 @@
 </p>
 
 <p align="center">
-  <a href="#what-is-isu">What is ISU</a> •
-  <a href="#features">Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#license">License</a>
+  <a href="#-what-is-isu">What is ISU</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-how-to-use">How To Use</a> •
+  <a href="#-documentation">Documentation</a> •
+  <a href="#-license">License</a>
 </p>
 
 <!--
@@ -57,20 +57,20 @@
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#what-is-isu"> What is ISU</a></li>
-    <li><a href="#features"> Features</a></li>
+    <li><a href="#-what-is-isu"> What is ISU</a></li>
+    <li><a href="#-features"> Features</a></li>
       <ul>
-        <li><a href="#core-data-structures"> Core Data Structures</a></li>
-        <li><a href="#dialogue-management">Dialogue Management</a></li>
-        <li><a href="#semantic-types-&-questions">Semantic Types & Questions</a></li>
-        <li><a href="#natural-language-processing">Natural Language Processing</a></li>
+        <li><a href="#-core-data-structures"> Core Data Structures</a></li>
+        <li><a href="#-dialogue-management">Dialogue Management</a></li>
+        <li><a href="#-semantic-types-&-questions">Semantic Types & Questions</a></li>
+        <li><a href="#-natural-language-processing">Natural Language Processing</a></li>
       </ul>
-    <li><a href="#how-to-use"> How to Use</a></li>
-    <li><a href="#documentation"> Documentation</a></li>
-    <li><a href="#author"> Author</a></li>
-    <li><a href="#support"> Support</a>
-    <li><a href="#contributing"> Contributing</a></li>
-    <li><a href="#license">License</a></li>
+    <li><a href="#-how-to-use"> How to Use</a></li>
+    <li><a href="#-documentation"> Documentation</a></li>
+    <li><a href="#-author"> Author</a></li>
+    <li><a href="#-support"> Support</a>
+    <li><a href="#-contributing"> Contributing</a></li>
+    <li><a href="#-license">License</a></li>
     <!--
     <li><a href="#experiments">Experiments</a></li>
     <li><a href="#results-and-discussion"> Results and Discussion</a></li>
